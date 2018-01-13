@@ -1,0 +1,7 @@
+package external;
+
+public class TicketMasterAPI {
+	public static final String API_HOST = "app.ticketmaster.com";
+	public static final String  SEARCH_PATH = "/discovery/v2/events.json";
+	
+}
