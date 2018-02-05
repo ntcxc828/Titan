@@ -1,14 +1,14 @@
-package db.mysql;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+package db.mysql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import db.DBConnection;
 import entity.Item;
@@ -21,7 +21,6 @@ public class MySQLConnection implements DBConnection {
 
 	public MySQLConnection() {
 		try {
-			// initialization
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			conn = DriverManager.getConnection(MySQLDBUtil.URL);
 		} catch (Exception e) {
@@ -31,6 +30,7 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public void close() {
+		// TODO Auto-generated method stub
 		if (conn != null) {
 			try {
 				conn.close();
@@ -42,6 +42,7 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public void setFavoriteItems(String userId, List<String> itemIds) {
+		// TODO Auto-generated method stub
 		if (conn == null) {
 			return;
 		}
@@ -61,6 +62,7 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public void unsetFavoriteItems(String userId, List<String> itemIds) {
+		// TODO Auto-generated method stub
 		if (conn == null) {
 			return;
 		}
@@ -79,11 +81,11 @@ public class MySQLConnection implements DBConnection {
 	}
 
 	@Override
-	public Set<String> getFavoriteItemIds(String userId) {	
+	public Set<String> getFavoriteItemIds(String userId) {
 		if (conn == null) {
 			return null;
 		}
-		Set<String> favoriteItems = new HashSet<>();
+		Set<String> itemIds = new HashSet<>();
 		try {
 			String sql = "SELECT item_id from history WHERE user_id = ?";
 			PreparedStatement statement = conn.prepareStatement(sql);
@@ -91,28 +93,31 @@ public class MySQLConnection implements DBConnection {
 			ResultSet rs = statement.executeQuery();
 			while (rs.next()) {
 				String itemId = rs.getString("item_id");
-				favoriteItems.add(itemId);
+				itemIds.add(itemId);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return favoriteItems;
+		return itemIds;
 	}
 
 	@Override
 	public Set<Item> getFavoriteItems(String userId) {
+		// TODO Auto-generated method stub
 		if (conn == null) {
 			return null;
 		}
 		Set<String> itemIds = getFavoriteItemIds(userId);
 		Set<Item> favoriteItems = new HashSet<>();
 		try {
+
 			for (String itemId : itemIds) {
 				String sql = "SELECT * from items WHERE item_id = ? ";
 				PreparedStatement statement = conn.prepareStatement(sql);
 				statement.setString(1, itemId);
 				ResultSet rs = statement.executeQuery();
 				ItemBuilder builder = new ItemBuilder();
+
 				// Because itemId is unique and given one item id there should
 				// have
 				// only one result returned.
@@ -133,6 +138,7 @@ public class MySQLConnection implements DBConnection {
 					builder.setImageUrl(rs.getString("image_url"));
 					builder.setUrl(rs.getString("url"));
 				}
+
 				Set<String> categories = getCategories(itemId);
 				builder.setCategories(categories);
 				favoriteItems.add(builder.build());
@@ -145,9 +151,7 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public Set<String> getCategories(String itemId) {
-		if (conn == null) {
-			return null;
-		}
+		// TODO Auto-generated method stub
 		Set<String> categories = new HashSet<>();
 		try {
 			String sql = "SELECT category from categories WHERE item_id = ? ";
@@ -164,10 +168,9 @@ public class MySQLConnection implements DBConnection {
 
 	}
 
-	// according the userId and lat, lon,get the nearby item,and call the
-	// saveItem()function to save the data
 	@Override
 	public List<Item> searchItems(String userId, double lat, double lon, String term) {
+		// TODO Auto-generated method stub
 		// Connect to external API
 		ExternalAPI api = ExternalAPIFactory.getExternalAPI(); // moved here
 		List<Item> items = api.search(lat, lon, term);
@@ -181,13 +184,14 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public void saveItem(Item item) {
+		// TODO Auto-generated method stub
 		if (conn == null) {
 			return;
 		}
 		try {
-			// First, insert into items table, IGNORE is used to ensure the
-			// unique userID
+			// First, insert into items table
 			String sql = "INSERT IGNORE INTO items VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
 			PreparedStatement statement = conn.prepareStatement(sql);
 			statement.setString(1, item.getItemId());
 			statement.setString(2, item.getName());
@@ -205,6 +209,7 @@ public class MySQLConnection implements DBConnection {
 			statement.setString(14, item.getImageUrl());
 			statement.setString(15, item.getUrl());
 			statement.execute();
+
 			// Second, update categories table for each category.
 			sql = "INSERT IGNORE INTO categories VALUES (?,?)";
 			for (String category : item.getCategories()) {
@@ -221,6 +226,7 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public String getFullname(String userId) {
+		// TODO Auto-generated method stub
 		if (conn == null) {
 			return null;
 		}
@@ -229,7 +235,6 @@ public class MySQLConnection implements DBConnection {
 			String sql = "SELECT first_name, last_name from users WHERE user_id = ?";
 			PreparedStatement statement = conn.prepareStatement(sql);
 			statement.setString(1, userId);
-			//since return result, so use executeQuery(). read from database
 			ResultSet rs = statement.executeQuery();
 			if (rs.next()) {
 				name += String.join(" ", rs.getString("first_name"), rs.getString("last_name"));
@@ -243,6 +248,7 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public boolean verifyLogin(String userId, String password) {
+		// TODO Auto-generated method stub
 		if (conn == null) {
 			return false;
 		}
@@ -261,4 +267,5 @@ public class MySQLConnection implements DBConnection {
 		return false;
 
 	}
+
 }
